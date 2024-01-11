@@ -225,15 +225,19 @@ class RegistrationController extends Controller {
 
     public function status(Request $request){
         try{
-            $getStatus = Seller::find($request->id);
-            if($getStatus->status == "3"){
-                $getStatus->status = "1";;
-            }elseif($getStatus->status == "1"){
-                $getStatus->status = "2";
-            }elseif($getStatus->status == "2"){
-                $getStatus->status = "4";
-            }else{
-                $getStatus->status = "3";
+            $getStatus = Seller::where('id', $request->id)->first();
+            switch ($getStatus) {
+                case $getStatus->status == "3":
+                    $getStatus->status = "1";
+                    break;
+                case $getStatus->status == "1":
+                    $getStatus->status = "2";
+                    break;
+                case $getStatus->status == "2":
+                    $getStatus->status = "4";
+                    break;
+                default:
+                    $getStatus->status = "3";
             }
             $getStatus->update();
             return response()->json([
