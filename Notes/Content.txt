@@ -1,0 +1,154 @@
+1) Migration --
+    a) artisan command
+
+
+2) Basic Database Structure
+    a) Raw Queries
+
+    b) Configuration multiple databse --
+
+    c) Running A Select Query --
+
+    d) Using Named Bindings --
+
+    e) Insert Statement --
+
+    f) Update Statement --
+
+    g) Delete Statement --
+
+
+
+
+3) Listening For Query Events
+
+
+
+
+4) Monitoring Cumulative Query Time -- 
+
+
+
+5) Database Transactions
+        a) Handling Deadlocks
+        b) Manually Using Transactions --
+
+
+6) Inspecting Your Databases --  
+        a) php artisan db:show
+
+        b) php artisan db:show --database=mysql1 -- 
+
+        c) php artisan db:show --counts --views  -- 
+
+        d) Table Overview -- 
+            php artisan db:table users
+
+
+
+7) Running Database Queries -- 
+    a) Retrieving All Rows From A Table -- 
+
+
+    b) Retrieving A Single Row / Column From A Table -- 
+
+
+    c) Value Method -- 
+
+
+    d) plunk method -- 
+
+
+    e) Chunking Results -- 
+    
+
+    f) Streaming Results Lazily -- 
+
+            a) lazyByIdDesc --
+
+
+
+    g) Aggregates -- The query builder also provides a variety of methods for retrieving aggregate values like count, max, min, avg, and sum. 
+
+            a) count() --  
+
+            b) max() -- 
+
+            c) min() -- 
+
+            d) sum() -- 
+
+            e) avg() -- 
+
+            f) Determining If Records Exist -- 
+
+
+
+
+2) Select Statements -- 
+    a) Specifying A Select Clause -- 
+
+    b) Distinct -- 
+    
+    c) addSelect -- 
+    
+
+
+
+
+3) Raw Expressions -- 
+    a) Raw Methods -- 
+    
+        1) selectRaw -- 
+
+
+
+
+8) Eloquent ORM --
+    a) One-To-One
+        1) One-to-one (state direction) --
+            a) Foreign Key --
+            b) Owner Key/ Local Key -- 
+
+        2) belongsTo (reverse direction) --
+            a) Foreign Key -- 
+            b) Owner Key/ Local Key -- 
+
+
+    b) One-to-Many
+        1)  One-to-Many (state direction) --
+            a) Foreign Key --
+            b) Owner Key/ Local Key -- 
+            
+        1)  One-to-Many (state direction) --
+            a) Foreign Key --
+            b) Owner Key/ Local Key -- 
+
+        3) Default Models -- 
+
+    
+    3) Has One Of Many -- 
+        a) latestOfMany -- 
+
+        b) oldestOfMany -- 
+
+        b) ofMany -- 
+
+
+
+
+
+                                LARAVEL API
+
+1) Authentication for login --
+
+2) Type of Methods
+    a) GET -- 
+
+    b) POST --
+
+    c) PUT --
+
+    d) PATCH --
+
+    e) DELETE -- 

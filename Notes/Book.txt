@@ -1,0 +1,1148 @@
+                                                DATABASE
+
+
+                                        BASIC DATABASE INFORMATION
+
+1) Configuration -- In this file, you may define all of your database connections, as well as specify which connection should be used by default
+    a) SQLite Configuration -- After the database has been created, you may easily configure your environment variables to 
+                                point to this database by placing the absolute path to the database in the DB_DATABASE 
+                                environment variable
+
+                                DB_CONNECTION=sqlite
+                                DB_DATABASE=/absolute/path/to/database.sqlite
+
+    b) Microsoft SQL Server Configuration -- PHP extensions installed as well as any dependencies they may require such as 
+                                            the Microsoft SQL ODBC driver
+
+    c) Configuration Using URLs -- database connections are configured using multiple configuration values such as host, database, username, 
+                                    password
+ 
+
+
+    d) Read & Write Connections -- Laravel makes this a breeze, and the proper connections will always be used whether you are 
+                                    using raw queries, the query builder, or the Eloquent ORM
+                            
+
+
+
+2) Running SQL Queries ---
+    a) Running A Select Query -- if you want to get data from database the basically you used laravel raw query --
+                select method always return ARRAY
+            use Illuminate\Support\Facades\DB;
+            $users = DB::select('select * from users where active = ?', [1]);
+
+    b) Selecting Scalar Values -- Sometimes your database query may result in a single, scalar value. 
+                    but it is not work in Laravel 10
+                $data = DB::connection("mysql1")->scaler("select count(case when previous_price = 1085 then 1 end) as burgers from products");
+
+    c) Selecting Multiple Result Sets -- if your app is calls stored procedures than it is return multiple result, that time
+                                        WE USE selectResultSets.
+                [$options, $notifications] = DB::selectResultSets("call get_detail(email)", $request->id);
+
+
+    d) Using Named Bindings -- whenever you we used these method than we must be defined parameter with value --
+                            Instead of using ? to represent your parameter bindings, you may execute a query using named bindings
+                $results = DB::connection("mysql1")->select('select * from products where id = :id', ['id' => 15]);
+
+
+    e) Running An Insert Statement -- whenever we used thses method than it is insert the data into database, and it is available in DB facade
+            DB::insert('insert into users (id, name) values (?, ?)', [1, 'Marc']);
+
+
+    f) Running An Update Statement -- the update method should be used when you went to change existing data. 
+            $affected = DB::update('update users set votes = 100 where name = ?',['Anita']);
+
+
+    g) Running A Delete Statement -- the delete method you should be used when you need to delete any existing data from databse.
+            $deleted = DB::delete('delete from users where id=5');
+
+
+    h) Running A General Statement -- Some database statements do not return any value
+            $deleted = DB::delete('drop from users');
+
+
+    i) Running An Unprepared Statement -- Sometimes you may want to execute an SQL statement without binding any values
+            DB::unprepared('update users set votes = 100 where name = "Dries"');
+
+
+
+3) Using Multiple Database Connections
+    if you want you connected multiple same databses(like many mysql is used in your project) in your single project than you
+    want to go .env file and defined connection from there 
+    emaple -- .env file      
+            DB_CONNECTION=mysql
+            DB_HOST=127.0.0.1
+            DB_PORT=3306
+            DB_DATABASE=api_data
+            DB_USERNAME=root
+            DB_PASSWORD=
+
+            DB_CONNECTION_SECOND=mysql1
+            DB_HOST_SECOND=127.0.0.1
+            DB_PORT_SECOND=3306
+            DB_DATABASE_SECOND=product
+            DB_USERNAME_SECOND=root
+            DB_PASSWORD_SECOND=
+
+    after complete settings from .env file than you need to change in database.php file which is available on config directory
+        
+        'mysql' => [
+            'driver' => 'mysql',
+            'url' => env('DATABASE_URL'),
+            'host' => env('DB_HOST', '127.0.0.1'),
+            'port' => env('DB_PORT', '3306'),
+            'database' => env('DB_DATABASE', 'forge'),
+            'username' => env('DB_USERNAME', 'forge'),
+            'password' => env('DB_PASSWORD', ''),
+            'unix_socket' => env('DB_SOCKET', ''),
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'prefix_indexes' => true,
+            'strict' => true,
+            'engine' => null,
+            'options' => extension_loaded('pdo_mysql') ? array_filter([
+                PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
+            ]) : [],
+        ],
+
+        'mysql1' => [
+            'driver' => 'mysql',
+            'url' => env('DATABASE_URL'),
+            'host' => env('DB_HOST_SECOND', '127.0.0.1'),
+            'port' => env('DB_PORT_SECOND', '3306'),
+            'database' => env('DB_DATABASE_SECOND', 'forge'),
+            'username' => env('DB_USERNAME_SECOND', 'forge'),
+            'password' => env('DB_PASSWORD_SECOND', ''),
+            'unix_socket' => env('DB_SOCKET', ''),
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'prefix_indexes' => true,
+            'strict' => true,
+            'engine' => null,
+            'options' => extension_loaded('pdo_mysql') ? array_filter([
+                PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
+            ]) : [],
+        ],
+
+    after complete settings from database.php file than you need to set connnection in your model file otherwise you went to need
+    to connection is used in your controller file if you used laravel raw queries.  
+
+        In Model File --- protected $connection = "database_name" -- which you defined in .env file 
+                In my case -- protected $connection = "mysql1";
+
+        In RAW Queries -- use Illuminate\Support\Facades\DB;
+                          DB::connection("mysql1")->after_you_need_queries_start_from_here;
+        
+
+
+4) Listening For Query Events -- This method is used basically when you create Login or Debbuging functionalities 
+        go to AppServiceProvider --
+                public function boot(): void {
+                    DB::listen(function (QueryExecuted $query) {
+                        // $query->sql;
+                        // $query->bindings;
+                        // $query->time;
+                    });
+                }
+
+        void means -- this function/method not return anything (void ka mtlb hota hai ki ye koi bhi function/method nahi return karta hai)
+
+
+
+5) Monitoring Cumulative Query Time -- 
+
+
+
+
+6) Database Transactions -- whenever we used transaction method than it is inspact your queries, and if getting any 
+                            exception in run time than transaction will automatically ROLLBACK data and exception is re-throuh
+                use Illuminate\Support\Facades\DB;
+                DB::transaction(function () {
+                    DB::update('update users set votes = 1');
+                    DB::delete('delete from posts');
+                });
+
+
+    a) Handling Deadlocks -- The transaction method accepts an optional second argument which defines the number of times a transaction should
+                             be retried when a deadlock occurs
+
+                use Illuminate\Support\Facades\DB;
+                DB::transaction(function () {
+                    DB::update('update users set votes = 1');
+                    DB::delete('delete from posts');
+                }, 5);
+
+
+    b) Manually Using Transactions -- If you would like to begin a transaction manually and have complete control over 
+                                    rollbacks and commits, than you may use the beginTransaction method
+                DB::beginTransaction();
+                DB::rollBack();
+                DB::commit();
+
+
+
+
+7) Inspecting Your Databases -- Using the db:show and db:table Artisan commands, you can get valuable insight into your 
+                            database and its associated tables
+
+                            a) php artisan db:show
+
+                            b) php artisan db:show --database=mysql1 -- You may specify which database connection should be inspected by providing the database connection name to the command via the --database option:
+
+                            c) php artisan db:show --counts --views  -- If you would like to include table row counts and database view details within the output of the command, than you use --counts and --views 
+
+    a) Table Overview -- 
+            php artisan db:table users
+
+
+
+
+
+                                        DATABASE QUERY BUILDER
+
+1) Running Database Queries -- 
+    a) Retrieving All Rows From A Table -- he table method returns a fluent query builder instance for the given table, allowing you to chain more constraints onto the query and then finally retrieve the results of the query using the get method
+        $users = DB::table('admins')->get();
+
+
+    b) Retrieving A Single Row / Column From A Table -- If you just need to retrieve a single row from a database table, you may use the DB facade's first method.
+        $users = DB::table('users')->where('name', 'John')->first();
+
+
+    c) Value Method -- when you want to need single value from database than use value method, If you don't need an entire row, you may extract a single value from a record using the value method.
+        $email = DB::table('users')->where('name', 'John')->value('email');
+
+
+    d) plunk method -- whenever we want to need only specific column value getting from database table than we use pluck method 
+        $titles = DB::table('users')->pluck('title', 'name');
+
+
+    e) Chunking Results -- chunk method is useful when you want to need small data display at a time than we used chunk method.
+        use Illuminate\Support\Collection;
+        use Illuminate\Support\Facades\DB;
+        DB::table('users')->orderBy('id')->chunk(100, function (Collection $users) {
+            foreach ($users as $user) {
+                // ...
+            }
+        }); 
+
+        if you want to stop further data not retrieved from database tha use false 
+        DB::table('users')->orderBy('id')->chunk(100, function (Collection $users) {
+            foreach ($users as $user) {
+                // ...
+            }
+            return false;
+        }); 
+
+        If you are updating database records while chunking results, your chunk results could change in unexpected ways. 
+        If you plan to update the retrieved records while chunking, it is always best to use the chunkById method instead. 
+        This method will automatically paginate the results based on the record's primary key
+        agar chunking kiye hua data ko updating karna ho tab ham chunkById method ka use karte hai kiyoki ye id ke base par
+        update karta hai.
+
+        DB::table('users')->where('active', false)->chunkById(100, function (Collection $users) {
+            foreach ($users as $user) {
+                DB::table('users')
+                    ->where('id', $user->id)
+                    ->update(['active' => true]);
+            }
+        });
+    
+    f) Streaming Results Lazily -- The lazy method works similarly to the chunk method in the sense that it executes the query in chunks
+                DB::table('users')->orderBy('id')->lazy()->each(function (object $user) {
+                    // ...
+                });
+
+        a) lazyByIdDesc - Once again, if you plan to update the retrieved records while iterating over them, it is best to use the 
+                lazyById or lazyByIdDesc methods instead
+            
+                DB::table('users')->where('active', false)->lazyById()->each(function (object $user) {
+                    DB::table('users')->where('id', $user->id)->update(['active' => true]);
+                });
+
+
+
+    g) Aggregates -- The query builder also provides a variety of methods for retrieving aggregate values like count, max, min, avg, and sum. 
+
+            a) count() -- this method will return total record count in your database. 
+                $users = DB::table('users')->count();
+
+            b) max() -- max method is used to find the maximum value of our database table columns 
+                $price = DB::table('orders')->max('price');
+
+            c) min() -- min method is used to find the minimum value of our database table columns 
+                $price = DB::table('orders')->min('price');
+
+            d) sum() -- sum method is used to calculate sum of the value of our database table columns 
+                $price = DB::table('orders')->sum('price');
+
+            e) avg() -- avg method is used to calculate the avg of the value of our database table columns 
+                $price = DB::table('orders')->where('finalized', 1)->avg('price');
+
+
+            f) Determining If Records Exist -- Instead of using the count method to determine if any records exist that match your query's constraints
+                if (DB::table('orders')->where('finalized', 1)->exists()) {
+                    // ...
+                }
+
+                if (DB::table('orders')->where('finalized', 1)->doesntExist()) {
+                    // ...
+                }
+
+
+2) Select Statements -- 
+    a) Specifying A Select Clause -- You may not always want to select all columns from a database table. Using the select method,
+        $users = DB::table('users')->select('name', 'email as user_email')->get();
+
+    b) Distinct -- The distinct method is used when we went to need remove duplicate data from distinct value   
+        $users = DB::table('users')->distinct()->get();
+
+    c) addSelect -- If you already have a query builder instance and you wish to add a column to its existing select clause, you may use the addSelect method: 
+        $users = $query->addSelect('age')->get();
+
+
+
+
+3) Raw Expressions -- Sometimes you may need to insert an arbitrary string into a query. To create a raw string expression
+            means when you want to need run subquery than use this method
+            $users = DB::table('users')->select(DB::raw('count(*) as user_count, status'))->where('status', '<>', 1)
+                    ->groupBy('status')
+                    ->get();
+
+
+    a) Raw Methods -- Remember, Laravel can not guarantee that any query using raw expressions is protected against SQL injection vulnerabilities.
+
+        1) selectRaw -- The selectRaw method can be used in place of addSelect(DB::raw(/* ... */)). This method accepts an optional array of bindings as its second argument:    
+
+            $orders = DB::table('orders')->selectRaw('price * ? as price_with_tax', [1.0825])->get();
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                    ELOQUENT ORM -- DATABASE QUERY BUILDER
+
+1) Generating Model Classes -- 
+    a) php artisan make:model Flight
+
+    b) php artisan make:model Flight --migration 
+
+    c) Generate a model and a FlightFactory class. -- this command create model with factory which is located in factory directory.
+            php artisan make:model Flight --factory 
+            php artisan make:model Flight -f
+    
+
+    d) Generate a model and a FlightSeeder class. -- this command create model with seeder which is located in seeder directory.
+            php artisan make:model Flight --seed
+            php artisan make:model Flight -s
+    
+    e) Generate a model and a FlightController class. -- this command create model with controller.
+            php artisan make:model Flight --controller
+            php artisan make:model Flight -c
+    
+    f) Generate a model, FlightController resource class, and form request classes. -- this command create model with Controller, resource, request.
+            php artisan make:model Flight --controller --resource --requests
+            php artisan make:model Flight -crR
+    
+    g) Generate a model and a FlightPolicy class. this command create model with policy which is located in policies directory.
+            php artisan make:model Flight --policy
+    
+    h) Generate a model and a migration, factory, seeder, and controller. -- this command create model with Controller, migration, seeder, factory.
+            php artisan make:model Flight -mfsc
+    
+    i) Shortcut to generate a model, migration, factory, seeder, policy, controller, and form requests... this command create all dependencies
+            php artisan make:model Flight --all
+    
+    j) Generate a pivot model...
+            php artisan make:model Member --pivot
+            php artisan make:model Member -p
+
+    
+    k) Inspecting Models - Sometimes it can be difficult to determine all of a model's available attributes and relationships just by skimming its code. Instead
+            php artisan model:show Flight
+
+
+
+2) Eloquent Model Conventions -- 
+    a) Table Names -- When we use model than must be defined the table name in model file 
+        like my case 
+        Admin{
+            protected $table = "table_name";
+        } 
+
+
+    b) Primary Keys -- This is useful for identified your database table column by using primary key
+        like my case 
+        Admin{
+            protected $primaryKey = 'flight_id';
+        } 
+
+        when you remove Primary Keys autoincreament properties than use this --
+        Admin{
+            public $incrementing = false;
+        }
+
+        If your model's primary key is not an integer, you should define a protected $keyType property on your model
+        Admin{
+            protected $keyType = 'string';
+        } 
+
+
+    c) UUID & ULID Keys -- Instead of using auto-incrementing integers as your Eloquent model's primary keys, you may choose 
+                            to use UUIDs instead. UUIDs are universally unique alpha-numeric identifiers that are 36 characters long.
+            use Illuminate\Database\Eloquent\Concerns\HasUuids;
+            use Illuminate\Database\Eloquent\Model;
+            
+            class Article extends Model {
+                use HasUuids;
+            }
+            $article = Article::create(['title' => 'Traveling to Europe']);
+            $article->id; // "8f8e8478-9035-4d23-b9a7-62f4d2612ce5"
+
+            a) By default, The HasUuids trait will generate "ordered" UUIDs for your models. These UUIDs are more efficient for 
+                indexed database storage because they can be sorted lexicographically.
+            
+                use Ramsey\Uuid\Uuid;
+                public function newUniqueId(): string {
+                    return (string) Uuid::uuid4();
+                }
+
+                public function uniqueIds(): array {
+                    return ['id', 'discount_code'];
+                }
+
+    
+    d) Timestamps -- By default, Eloquent expects created_at and updated_at columns to exist on your model's corresponding database table
+                If you do not want these columns to be automatically managed by Eloquent, than you should define 
+                a $timestamps property on your model with a value of false
+
+            public $timestamps = false;
+
+            2) If you need to customize the format of your model's timestamps, set the $dateFormat property on your model
+                This property determines how date attributes are stored in the database as well as their format when the 
+                model is serialized to an array or JSON
+
+                protected $dateFormat = 'U';
+
+            3) If you need to customize the names of the columns used to store the timestamps, you may define CREATED_AT and UPDATED_AT constants on 
+                your model
+                    const CREATED_AT = 'creation_date';
+                    const UPDATED_AT = 'updated_date';
+
+            4) If you would like to perform model operations without the model having its updated_at timestamp modified, than we used withoutTimestamps method
+                Model::withoutTimestamps(fn () => $post->increment(['reads']));
+
+
+    e) Database Connections -- If you would like to specify a different connection that should be used when interacting with a particular db, than you 
+                            should define a $connection property on the model
+
+                protected $connection = 'mysql1';
+
+
+    f) Default Attribute Values -- If you would like to define the default values for some of your model's attributes, you may define an $attributes property on your model
+                protected $attributes = [
+                    'options' => '[]',
+                    'delayed' => false,
+                ];
+
+
+
+
+    g) Configuring Eloquent Strictness -- you may wish to only disable lazy loading in non-production environments so that your production 
+                                environment will continue to function normally even if a lazy loaded relationship is accidentally present in 
+                                production code. Typically, this method should be invoked in the boot method of your application's AppServiceProvider
+            In AppServiceProvider -- 
+            use Illuminate\Database\Eloquent\Model;
+            public function boot(): void {
+                Model::preventLazyLoading(! $this->app->isProduction());
+            }
+
+            or 
+
+            Model::preventSilentlyDiscardingAttributes(! $this->app->isProduction());
+
+
+
+3) Retrieving Models -- Once you have created a model and its associated database table, you are ready to start retrieving data from your database
+    a) Building Queries -- The all() method will return all of the data from table.
+            $flights = Flight::where('active', 1)->orderBy('name')->take(10)->get();
+
+
+    b) Refreshing Models -- The fresh method will re-retrieve the model from the database. The existing model instance will not be affected
+            $flight = Flight::where('number', 'FR 900')->first();
+            $freshFlight = $flight->fresh();
+
+            or 
+
+            $flight = Flight::where('number', 'FR 900')->first();
+            $flight->number = 'FR 456';
+            $flight->refresh();
+            $flight->number; // "FR 900"
+
+
+
+    c) Collections -- Eloquent methods like all and get retrieve multiple records from the database.
+                        these methods don't return a plain PHP array
+                        Eloquent Collection class extends Laravel's base Illuminate\Support\Collection class, which provides a 
+                        variety of helpful methods for interacting with data collections
+
+        a) Reject Method -- the reject method may be used to remove models from a collection based on the results of an invoked closure
+                $flights = Flight::where('destination', 'Paris')->get();
+                $flights = $flights->reject(function (Flight $flight) {
+                    return $flight->cancelled;
+                });
+
+
+        b) Chunking Results -- The chunk method will retrieve a subset of Eloquent models, passing them to a closure for processing
+                                Since only the current chunk of Eloquent models is retrieved at a time, the chunk method will provide 
+                                significantly reduced memory usage when working with a large number of models
+
+                    use App\Models\Flight;
+                    use Illuminate\Database\Eloquent\Collection;
+                    Product::chunk(200, function (Collection $products) {
+                        foreach ($products as $product) {
+                            // ...
+                        }
+                    });
+
+
+                2) chunk method in these scenarios could lead to unexpected and inconsistent results. Internally, the chunkById 
+                    method will always retrieve models with an id column greater than the last model in the previous chunk
+                    Flight::where('departed', true)->chunkById(200, function (Collection $flights) {
+                        $flights->each->update(['departed' => false]);
+                    }, $column = 'id');
+
+
+        c) Chunking Using Lazy Collections -- The lazy method works similarly to the chunk method in the sense that, behind the scenes, it executes the query in chunks
+                Flight::lazy()
+
+
+        d) If you are filtering the results of the lazy method based on a column that you will also be updating while iterating over the results, you should use the lazyById method
+                Flight::where('departed', true)->lazyById(200, $column = 'id')->each->update(['departed' => false]);
+
+
+
+        e) Cursors -- Similar to the lazy method, the cursor method may be used to significantly reduce your application's 
+                        memory consumption when iterating through tens of thousands of Eloquent model records
+                        The cursor method will only execute a single database query
+
+                    Flight::where('destination', 'Zurich')->cursor()
+
+                                            OR 
+
+                    $users= User::cursor()->filter(function (User $user) {
+                                return $user->id > 500;
+                            });
+
+
+
+
+5) Advanced Subqueries --
+    a) Subquery Selects -- let's imagine that we have a table of flight destinations and a table of flights to destinations. 
+                    The flights table contains an arrived_at column which indicates when the flight arrived at the destination
+
+                    use App\Models\Destination;
+                    use App\Models\Flight;
+                    
+                    return Destination::addSelect(['last_flight' => Flight::select('name')
+                        ->whereColumn('destination_id', 'destinations.id')
+                        ->orderByDesc('arrived_at')
+                        ->limit(1)
+                    ])->get();
+
+
+    b) Subquery Ordering -- we may use this functionality to sort all destinations based on when the last flight arrived at that 
+                                destination. Again, this may be done while executing a single database query
+                            
+                            return Destination::orderByDesc(
+                                        Flight::select('arrived_at')
+                                            ->whereColumn('destination_id', 'destinations.id')
+                                            ->orderByDesc('arrived_at')
+                                            ->limit(1)
+                                    )->get();
+
+
+
+
+7) Retrieving Single Models / Aggregates -- 
+    a) find/first -- In addition to retrieving all of the records matching a given query, you may also retrieve single records 
+                using the find, first, or firstWhere methods. Instead of returning a collection of models, these methods return 
+                a single model instance
+
+        use App\Models\Flight;
+        // Retrieve a model by its primary key...
+                $flight = Flight::find(1);
+        
+        // Retrieve the first model matching the query constraints...
+                $flight = Flight::where('active', 1)->first();
+        
+        // Alternative to retrieving the first model matching the query constraints...
+                $flight = Flight::firstWhere('active', 1);
+
+
+    b) findOr/firstOr -- Sometimes you may wish to perform some other action if no results are found. The findOr and firstOr 
+                            methods will return a single model instance or, if no results are found, execute the given closure. 
+                            The value returned by the closure will be considered the result of the method
+
+            $flight = Flight::findOr(1, function () {
+                // ...
+            });
+            
+            $flight = Flight::where('legs', '>', 3)->firstOr(function () {
+                // ...
+            });
+
+    
+    c) Not Found Exceptions -- The findOrFail and firstOrFail methods will retrieve the first result of the query
+                findOrFail -- method you should used to if you want to need to find data if data is having or not if having than
+                                return data and suppose not have return false 
+                    
+                    $flight = Flight::findOrFail(1);
+                    $flight = Flight::where('legs', '>', 3)->firstOrFail();
+
+
+    d) Retrieving Or Creating Models --
+
+            use App\Models\Flight;
+                
+            1) Retrieve flight by name or create it if it doesn't exist...
+                $flight = Flight::firstOrCreate([
+                    'name' => 'London to Paris'
+                ]);
+                
+            2) Retrieve flight by name or create it with the name, delayed, and arrival_time attributes...
+                $flight = Flight::firstOrCreate(
+                    ['name' => 'London to Paris'],
+                    ['delayed' => 1, 'arrival_time' => '11:30']
+                );
+                
+            3) Retrieve flight by name or instantiate a new Flight instance...
+                $flight = Flight::firstOrNew([
+                    'name' => 'London to Paris'
+                ]);
+                
+            4) Retrieve flight by name or instantiate with the name, delayed, and arrival_time attributes...
+                $flight = Flight::firstOrNew(
+                    ['name' => 'Tokyo to Sydney'],
+                    ['delayed' => 1, 'arrival_time' => '11:30']
+                );
+
+
+    e) Retrieving Aggregates -- When interacting with Eloquent models, you may also use the count, sum, max, and other 
+                                    aggregate methods provided by the Laravel query builder
+
+                    $count = Flight::where('active', 1)->count();
+                    $max = Flight::where('active', 1)->max('price');
+
+
+
+
+8) Inserting & Updating Models -- 
+    a) Inserts -- whenever we create new data in database than we use create method 
+
+        1) create new entry by using save method --
+            public function store(Request $request): RedirectResponse {
+                // Validate the request...
+                $flight = new Flight;
+                $flight->name = $request->name;
+                $flight->save();
+                return redirect('/flights');
+            }
+
+        2) create new entry by using create method
+            use App\Models\Flight;
+            $user = User::create([
+                'first_name' => $request->fname,
+                'last_name' => $request->lname,
+                'title' => $request->title,
+            ]);
+
+
+    b) Updates -- whenever you want to change existing data from database table than use this --
+        1) update data by using update method 
+
+            Flight::where('active', 1)
+            ->where('destination', 'San Diego')
+            ->update(['delayed' => 1]);
+    
+        2) update existing data by using save method -
+            use App\Models\Flight;
+            $flight = Flight::find($id);
+            $flight->name = $request->name;
+            $flight->save();
+
+
+9) Deleting Models -- if you want to delete any records from databases table than use delete method 
+    a) delete -- delete data by using delete method -- 
+        use App\Models\Flight;
+        $flight = Flight::find($id);
+        $flight->delete();
+
+
+    b) truncate -- if you want to delete all records from database table than use truncate method 
+        Flight::truncate();
+
+
+    c) destroy -- whenever you want used destroy method than destroy is must be need one primaryKey data. 
+        $data = Flight::where('id', $request->id);
+        destroy($data);
+
+
+    d) Soft Deleting -- whenever you want to need to delete record from database table but accutually record not deleted from database
+                        table it is only change status and deleted_at column value getting that is Soft Deleting
+
+        In Model -- use Illuminate\Database\Eloquent\SoftDeletes;
+        class Flight extends Model {
+            use SoftDeletes;
+        }
+
+        In migration -- 
+        Schema::table('flights', function (Blueprint $table) {
+            $table->softDeletes();
+        });
+
+        In Controller -- 
+        if ($flight->trashed()) {
+            // ...
+        }
+
+    e) Restoring Soft Deleted Models -- whenever you want to recover record which record was deleted by softDeletes than we use 
+                                            restore method. deleted_at value get NULL.
+        $flight->restore();
+
+
+    f) Permanently Deleting Models -- whenever you want to delete record from database table permanently than use this method 
+            $flight->forceDelete();
+            $flight->history()->forceDelete(); -- give history also.
+
+
+
+
+
+10) Replicating Models -- You may create an unsaved copy of an existing model instance using the replicate method.
+        use App\Models\Address;
+        $shipping = Address::create([
+            'type' => 'shipping',
+            'line_1' => '123 Example Street',
+            'city' => 'Victorville',
+            'state' => 'CA',
+            'postcode' => '90001',
+        ]);
+        
+        $billing = $shipping->replicate()->fill([
+            'type' => 'billing'
+        ]);
+        
+        $billing->save();
+
+
+
+
+11) Query Scopes --
+    a) Global Scopes -- Global Scopes is a scope which is used everyever in this current file 
+
+    b) Generating Scopes -- To generate a new global scope, you may invoke the make:scope
+            php artisan make:scope AncientScope
+    
+            1) Writing Global Scopes -- 
+
+                    <?php
+                    namespace App\Models\Scopes;
+                    use Illuminate\Database\Eloquent\Builder;
+                    use Illuminate\Database\Eloquent\Model;
+                    use Illuminate\Database\Eloquent\Scope;
+                    
+                    class AncientScope implements Scope {
+                        public function apply(Builder $builder, Model $model): void {
+                            $builder->where('created_at', '<', now()->subYears(2000));
+                        }
+                    }
+
+
+            2) Applying Global Scopes -- 
+
+                    <?php    
+                    namespace App\Models;
+                    
+                    use App\Models\Scopes\AncientScope;
+                    use Illuminate\Database\Eloquent\Model;
+                    class User extends Model {
+                        protected static function booted(): void {
+                            static::addGlobalScope(new AncientScope);
+                        }
+                    }
+
+    
+    c) Local Scopes -- Local Scopes is valid only inside the function or condition.
+
+
+
+
+
+
+
+
+
+
+
+                                    ELOQUENT: RELATIONSHIPS
+
+Relationship ka benefit tab milta hai jab agar ham kissi records ko delete karte hai aur wo record kissi other table ke
+sath relationship banata hai tab ham diract delete nahi kar sakte hai
+
+Example -- maan lo ek mobile cumpony hai aur wo mobile sale karti hai 
+            company 2 table create karenga (Mobile Table and Customer Table) ab mobile me foreign key hai jo customer table
+            ka hai, 
+            abhi maan lo maine mobile table se koi record delete kiya to ye possible hoga 
+            but agar ham bina mobile table se data delete kiye bina customer table se data delete karenge tab error aayega 
+            kyoki agar ham customer se data delete kar de direct to hamko pata hi nhi chalega kiss user/customer ne 
+            mobile kharida tha
+
+
+1) ONE-TO-ONE -- THIS METHOD IS USE TO DEFINED 1 table col data to 2 table col data
+
+    a)    Example -- maan lo hamare pass 3 table Model hai 1-Product, 2-productAttr, 3-productAttrGallery
+                abhi hamko Product Model se other table ka data get karna hai with the help of Product id
+                tab hamko jab hasMany lena hota hai
+
+        Product table Field --
+                            id
+                            name
+                            productsku
+                            owner
+        
+        product_attrs table -- 
+                            id
+                            product_sku
+                            size
+
+        product_attr_gallery table -- 
+                            id
+                            pid
+                            color
+                            
+        abhi hamko product ke base par product_attrs aur product_attr_gallery data lana hai
+
+            public function productAttr() {
+                return $this->hasOne(productAttr::class, "yaha par foreign key dete hai jo mere case me productid", "yaha par jiss model me currently work kar rhe hai usme jo product table se matching field ko lete hai");
+            }  
+
+
+        ex -- 
+            public function productAttr() {
+                return $this->hasOne(productAttr::class, "product_sku", "productsku);
+            }
+
+
+
+        1) Fogeign Key -- create foreign key 
+            In migration file --
+            Customer Table
+                Schema::table('customer', function (Blueprint $table) {
+                    $table->id();
+                    $table->string("name");
+                    $table->string("email");
+                });
+
+            Moblie Table
+                Schema::table('mobile', function (Blueprint $table) {
+                    $table->id();
+                    $table->unsignedBigInteger("customer_id");
+                    $table->foreign("customer_id")->references("id")->on("customer");
+                    // yaha par references ka mtlb hai ki field par
+                    // on ka mtlb hai kiss field par 
+                    // $table->unsignedBigInteger("customer_id") -- yaha par unsignedBigInteger iss liye use kiya hai kiyoki    
+                                               $table->id(); ye default unsignedBigInteger hi hota hai iss liye dono ka datatype 
+                                               same hona chahiye     
+                });
+
+        2) Local Key -- Local key mtlb hai ki jiss model me currently ham work kar rhe hai uss Model ke Table ka col jo foreign
+                        key ke sath relation banata ho.
+
+
+
+    b) Inverse of ONE-TO-ONE or belongsTo -- relationship mean ulta hota hai one-to-one ka, jiss table me foreign key hota hai ussme ham belongsTo ka function create
+                                karte hai 
+            means jiss table me foreign key hoga uss Model me hi belongsTo function create karte hai
+                Syntax -- belongsTo(Model_Class_Name, 'foreign key', 'onwer key')
+                            where Model_Class_Name -- The name of the related Model Name 
+
+
+                public function phone() {
+                    return $this->belongsTo(Phone::class);
+                }
+            a) Fogeign Key -- foreign key means whenever we want to need to connect more than one table than we used foreign key, 
+                                    foreign key as a primary key in parent class 
+
+
+            b) Owner Key -- if the parent model does not used Primary key, than you wish to find the associated model using a different col.
+
+                    
+
+
+
+2) ONE-TO-MANY --- 
+    a) jab hamare parent table ki id ke base par child tables me multiple data ho tab usko get karne ke liye hamko
+                        OneToMany method ka use karna hota hai
+            Syntax -- hasMany(Model_Class_Name, "foreign Key -- jiss table me foreign Key hota hai uss col ka name likhte hai ", "local Key -- ye ki currently kaam kar rhe table ki wo col hoti hai jisse ham relation create karte hai");
+            
+            public function productAttr() {
+                return $this->hasMany(productAttr::class, "yaha par foreign key dete hai jo mere case me productid", "yaha par jiss model me currently work kar rhe hai usme jo product table se matching field ko lete hai");
+            }  
+
+            Example --
+                public function phone() {
+                    return $this->hasMany(Model_Name::class, 'foreign_key', 'local_key');
+                }
+
+
+            a) Fogeign Key -- foreign key means whenever we want to need to connect more than one table than we used foreign key, 
+                                    foreign key as a primary key in parent class 
+
+                    return $this->hasMany(Model_Class_Name::class, "foreign_key");
+
+
+
+            b) local Key -- if the parent model does not used Primary key, than you wish to find the associated model using a different col.
+
+                    return $this->hasMany(Model_Class_Name::class, "foreign_key", "local_key");
+
+
+
+
+    b) One To Many (Inverse) / Belongs To -- 
+            Syntax -- $this->belongsTo(Model_Class_Name, "foreign Key -- jiss table me foreign Key hota hai uss col ka name likhte hai ", "local Key -- ye ki currently kaam kar rhe table ki wo col hoti hai jisse ham relation create karte hai");
+            
+            return $this->belongsTo(Post::class);
+
+            a) Fogeign Key -- foreign key means whenever we want to need to connect more than one table than we used foreign key, 
+                                    foreign key as a primary key in parent class 
+
+                    return $this->belongsTo(Model_Class_Name::class, "foreign_key");
+
+
+            b) local Key -- if the parent model does not used Primary key, than you wish to find the associated model using a different col.
+
+                    return $this->belongsTo(Model_Class_Name::class, "foreign_key", "local_key");
+
+
+            c) Default Models -- This pattern is often referred to as the Null Object pattern and can help remove 
+                                    conditional checks in your code
+
+                    return $this->belongsTo(User::class)->withDefault();
+
+
+
+
+3) Has One Of Many -- Sometimes a model may have many related models, yet you want to easily retrieve the 
+                        "latest" or "oldest" related model of the relationship.
+ 
+        a) latestOfMany -- you may define a method to retrieve the "latest", or last, related model of a relationship
+                    return $this->hasOne(Order::class)->latestOfMany();
+
+
+        b) oldestOfMany -- you may define a method to retrieve the "oldest", or first, related model of a relationship
+                    return $this->hasOne(Order::class)->oldestOfMany();
+
+
+        b) ofMany --  The ofMany method accepts the sortable column as its first argument and which aggregate function 
+                        (min or max) to apply when querying for the related model
+
+                    return $this->hasOne(Order::class)->ofMany('price', 'max');
+
+
+5) Has Many Through -- jab hamre pass 3 table like product, order and order_product ho aur 
+                    product ka relation order and order_product dono me hai but
+                    order_product aur order aapas me koi relationship nahi ho tab ham Has Many Through
+                    ka use karte hai.
+
+        return $this->hasManyThrough(Deployment::class, Environment::class);
+
+
+
+
+
+
+
+
+
+
+
+
+05-01-2024 --
+1) Many To Many Relationships -- a user may be assigned the role of "Author" and "Editor"; however, those 
+                                roles may also be assigned to other users as well. So, a user has many roles 
+                                and a role has many users
+
+        a) Table Structure -- 
+            users
+                id - integer
+                name - string
+            
+            roles
+                id - integer
+                name - string
+            
+            role_user
+                user_id - integer
+                role_id - integer
+
+
+        b) Model Structure -- Many-to-many relationships are defined by writing a method that returns the result 
+                                of the belongsToMany method
+
+                Syntax -- return $this->belongsToMany(Model_Class_Name::class);
+
+                Example
+                    Syntax -- return $this->belongsToMany(Role::class, 'role_user', 'user_id', 'role_id');
+
+
+        c) Retrieving Intermediate Table Columns -- 
+
+
+
+
+
+
+                                        ELOQUENT : API RESOURCES
+
+
+1) Generating Resources -- you may wish to display certain attributes for a subset of users and not others, 
+                            or you may wish to always include certain relationships in the JSON representation 
+                            of your models. Eloquent's resource classes allow you to expressively and easily 
+                            transform your models and model collections into JSON
+
+    a) Resources -- 
+        php artisan make:resource Name_Resource
+
+            Every resource class defines a toArray method which returns the array of attributes that should 
+            be converted to JSON when the resource is returned as a response from a route or controller method
+
+                php artisan make:resource UserCollection
+
+                <?php
+                    namespace App\Http\Resources;
+                    
+                    use Illuminate\Http\Request;
+                    use Illuminate\Http\Resources\Json\JsonResource;
+                    
+                    class UserResource extends JsonResource {
+                        public function toArray(Request $request): array
+                        {
+                            return [
+                                'id' => $this->id,
+                                'name' => $this->name,
+                                'email' => $this->email,
+                                'created_at' => $this->created_at,
+                                'updated_at' => $this->updated_at,
+                            ];
+                        }
+                    }
+
+
+
+    b) Collection Resources -- To create a resource collection, you should use the --collection flag when 
+                                creating the resource
+
+                                If you are returning a collection of resources or a paginated response, you 
+                                should use the collection method provided by your resource class when creating 
+                                the resource instance in your route or controller
+
+                    php artisan make:resource User --collection
+                    php artisan make:resource UserCollection
+
+
+                1) go to resource folder select collationfile
+                    <?php
+                        namespace App\Http\Resources;
+                        
+                        use Illuminate\Http\Request;
+                        use Illuminate\Http\Resources\Json\ResourceCollection;
+                        
+                        class UserCollection extends ResourceCollection {
+                            public function toArray(Request $request): array
+                            {
+                                return [
+                                    'data' => $this->collection,
+                                    'links' => [
+                                        'self' => 'link-value',
+                                    ],
+                                ];
+                            }
+                        }
+
+                2) go to route file and defined your collation method
+                        use App\Http\Resources\UserCollection;
+                        use App\Models\User;
+                        Route::get('/users', function () {
+                            return new UserCollection(User::all());
+                        });
+
+
+
+
+
+
+
+                                LARAVEL API
+
+
+1) Authentication using Guard for Admin and User Login System ---
+    a) 1st i have changing go to app\Exceptions\Handler.php file and set some condition 
+
+        if($request->expectsJson()) {
+            return response()->json([
+                'error' => 'Unauthenticated.',
+                'message'=> $exception->getMessage(),
+            ],401);
+        }
+        if($request->is('admin') || $request->is('admin/*')) {
+            return redirect()->guest('/admin/login');
+        }
+        if($request->is('user') || $request->is('user/*')) {
+            return redirect()->guest('/login');
+        }
+
+    
+    b) after change in Handler i'm going to app\http\middleware\RedirectIfAuthenticated.php file
+        if ($guards=="admin" && Auth::guard($guards)->check()) {
+            return $next($request);
+        }
+        if ($guards== "user" && Auth::guard($guards)->check()) { 
+            return $next($request);
+        }
+        return $next($request);
+
+
+
+10-01-24 --
+
+1) Image Upload -- 
+            a) 1st install -- php artisan storage:link
+
+
+
+
+        
+
+
+
+
+
+
+
+
+
+
+
+
