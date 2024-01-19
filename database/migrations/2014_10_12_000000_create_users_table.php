@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('lname', 100)->nullable();
             $table->string('username', 100);
             $table->string('phone', 12)->nullable();
-            $table->string('gender', 12)->nullable()->comment("1=Male, 2=Female, 3=Other");
+            $table->string('gender', 12)->comment("1=Male, 2=Female, 3=Other")->nullable();
             $table->string('fax', 100)->nullable();
             $table->text('address')->nullable();
             $table->text('address2')->nullable();
@@ -41,7 +41,7 @@ return new class extends Migration
             $table->longText("access_token");
             $table->rememberToken();
             $table->timestamps();
-            $table->timestamps("last_seen")->nullable();
+            // $table->timestamps("last_seen");
         });
     }
 

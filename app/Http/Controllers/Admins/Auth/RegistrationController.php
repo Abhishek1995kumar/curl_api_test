@@ -199,7 +199,7 @@ class RegistrationController extends Controller {
         $validated = Validator::make($request->all(), $rules, $customMessage);
         if($validated->fails()){
             return response()->json($validated->messages(), 422);
-        }else{
+        } else {
             if($request->isMethod('POST')){
                 try{
                     // $value = $request->input();

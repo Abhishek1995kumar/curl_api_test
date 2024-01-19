@@ -1130,14 +1130,95 @@ Example -- maan lo ek mobile cumpony hai aur wo mobile sale karti hai
 1) Image Upload -- 
             a) 1st install -- php artisan storage:link
 
+        try{
+            // $users = User::with('masterEmployee')->whereHas('masterEmployee', function($master_data){
+            //     $master_data->where('user_id', 5);
+            // })->get();
+            $employee_details = MasterEmployees::with('user')->get();
+            // foreach( $employee_details as $key => $value ){
+            //     // $users_details = User::get();
+            //     $data[] = [
+            //         'employee_id'       => $value->employer_id,
+            //         'code'              => $value->code,
+            //         'joining_date'      => $value->doj,
+            //         'dob'               => $value->dob,
+            //         'email'             => $value->email,
+            //         'default_password'  => $value->default_password,
+            //     ];
+            // }
+            // $user = User::where('email', $request->email)->first();
+            // $employer_code = User::with('employerUserMapping.masterEmployers')->first();
+            // $employer_code = DB::select('SELECT u.id userid, em.user_id mapping_id, em.employer_id as employer, me.code, u.master_user_types_id, u.email FROM `users` u
+            //                             join employer_user_mappings em on em.user_id = u.id
+            //                             join master_employers me on me.id = em.employer_id
+            //                             where u.master_user_types_id=4;');
 
+            if($user){
+                $employee_details       = MasterEmployees::where('user_id', $user->id)->first();
+                $orgnization_details    = 
+                $userName               = secure($user->name, 'D');
+                $user_email             = $user->email;
+                $domain_name            = env('APP_NAME','Employee-Benefits');
+                $employee_doj           = $employee_details->doj;
+                $employee_dob           = $employee_details->dob;
+                $employee_code          = $employee_details->code;
 
+                if($userName != NULL && $employee_code != NULL) {
+                    $defaultPassword = $userName.'@'.$employee_code;
+                    $user->default_password = secure($defaultPassword, 'E');
+                    return [$defaultPassword, $user->default_password];
+                } elseif($employee_code != NULL && $employee_doj != NULL) {
 
+                } elseif($employee_code != NULL && $employee_dob != NULL) {
+
+                } elseif($userName != NULL && $employee_code != NULL) {
+
+                }elseif($employee_code != NULL && $userName != NULL) {
+
+                } elseif($userName != NULL && $employee_dob != NULL) {
+
+                } elseif($userName != NULL && $employee_doj != NULL) {
+
+                } elseif($employee_doj != NULL && $employee_code != NULL){
+
+                } elseif($employee_code != NULL && $domain_name != NULL){
+
+                }
+                return $orgnization_details;
+            }
+            return response()->json([
+                "status"=> true,
+                "data"=> $employee_details
+            ],200);
+        }catch(\Exception $e){
+            return response()->json([
+                "status"=> false,
+                "error"=> $e->getMessage(),                     
+            ],422);
+        }
         
+                    // $employer_code = User::with('employerUserMapping.masterEmployers')->first();
+            // $employer_code = User::with('employerUserMapping.masterEmployers')->first();
+            // $employer_code = DB::select('SELECT u.id userid, em.user_id mapping_id, em.employer_id as employer, me.code, u.master_user_types_id, u.email FROM `users` u
+            //                             join employer_user_mappings em on em.user_id = u.id
+            //                             join master_employers me on me.id = em.employer_id
+            //                             where u.master_user_types_id=4;');
 
 
 
 
+
+
+
+Local Server Details                                                       Live Server Details
+
+Api Name -- Endorsement Request                                            Api Name -- Endorsement Request
+
+Api URL -- 127.0.0.1//eb.fynity.in/api/broker/new-endrose-member           Api URL -- https://eb.fynity.in/api/broker/new-endrose-member
+
+Using Table -- endorsement_data_dumps, employee_members                     Using Table - endorsement_data_dumps, employee_members
+                master_employee (if new user than or itself)                              master_employee (if new user than or itself)
+                employee_policy_relation, users                                           employee_policy_relation, users
 
 
 

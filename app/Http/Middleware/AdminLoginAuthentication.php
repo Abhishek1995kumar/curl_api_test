@@ -8,7 +8,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Auth;
 use App\Models\Admin;
 use Cache;
-class AdminAuthentication {
+class AdminLoginAuthentication {
     public function handle(Request $request, Closure $next): Response {
         // jab use browser close karega tab login_status update ho jayega
         if(Auth::guard("admin")->check()) {
